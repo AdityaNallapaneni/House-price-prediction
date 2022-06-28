@@ -1,0 +1,292 @@
+---
+title: "House Price Prediction"
+author: "Aditya Sai Nallapaneni"
+date : "06/28/2022"
+output:
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, include=FALSE}
+library(dplyr)
+library(Metrics)
+library(rpart)
+library(rpart.plot)
+```
+
+
+## Abstract:
+
+The main goal of this project is to perform data analysis and prediction of house using a set of features. The data set is taken from Kaggle which is a public website for machine learning data sets. For data analysis, scatter plots, correlation tests using pearson method, ANOVA, box plots and linear regression are used to identify the effects of different set of features on the target variable. The algorithm being used is linear regression. We have obtained an R square value of 79% which means our model was able to explain 79% variability in our target variable. It seeks to answer the question which variable is the most important to predict the house prices. This model will help the real estate agents and the general public to get an estimate about the prices of a house. We could deploy this model to production in this case.
+
+## Introduction:
+
+  When you ask a home buyer to describe their ideal home, they are unlikely to start with the basement ceiling height or the closeness to an east-west railroad. However, the data from this playground competition shows that there are much more factors that impact price negotiations than the number of beds or the presence of a white-picket fence. This research focuses on the forecasting the ultimate price of each property using 79 explanatory factors that describe (nearly) every characteristic of residential dwellings in Ames, Iowa.
+  
+## Literature Review:
+In a recent study by Ravikumar (S, 2018)[1], they implemented machine learning algorithms and data mining techniques on predicting house prices. By using R studio and WEKA graphical interface, ML algorithms like Support vector machine, random Forest, Multiple linear regression, and neural networks are addressed. In his study, they found that among these algorithms random forest and gradient boosted trees performed better with high accuracy and with fewer error values. Moreover, they found few attributes that contributed most to the prediction analysis. Evaluation of the accuracy is done by using mean absolute error which tells the difference between actual and predicted prices. The author suggested that it would be more helpful if there are more attributes like surroundings, marketplaces, and many related variables to the houses. In addition, I’ll perform linear regression and decision tree models and find the most common attributes that helps to predict the model.
+
+According to the study of (Thamarai D. M., 2020)[2], he addressed two machine learning algorithms to predict house prices. As he said these models are implemented to help customers to purchase a house suitable for their needs. The proposed theory tells us the most common attributes or features of the house are likely to be the Age of the house, traveling facility from XYZ location, school facility, and shopping malls availability nearby the house. He implemented these algorithms using sci-kit- learn. As a result, by comparing two algorithms Multiple linear regression is found to perform better in predicting the house prices. However, the author suggested including more features and performing more advanced techniques for predicting house prices. In addition, I do data visualization using scatter plots and histograms, and comparison of linear regression algorithm and decision tree regression is applied which helps real estate agents to predict the prices based on important attributes.
+
+  
+## Research Question:
+
+  The main goal of this project is to build a prediction model to predict the prices of a house based on the input features that are present in the data set. Secondly we will perform statistical tests to see which factors affects the prices of a house. 
+  
+  
+## Theory:
+
+H1:  Regression analysis can be used to highlight the relationship between year built and sale price of a house. It will tell us whether the house become old, and its value reduced or not.
+
+H2:  An evaluation of the correlation between garage area, lot area, overall condition of the house, and year built can be helpful for identifying highly correlated pairs.
+
+
+
+## Dataset:
+
+This project is based on the dataset collected about the real estate prices of a house from publically available dataset https://www.kaggle.com/competitions/house-prices-advanced-regression-techniques/data. The dataset consists of around 79 columns but we will subset the data to contain a few columns of interest in this case. Following variables will be used during this project instead of using all available variables:
+•	SalePrice - the property's sale price in dollars. This is the target variable that you're trying to predict.
+•	MSSubClass: The building class
+•	LotArea: Lot size in square feet
+•	LandContour: Flatness of the property
+•	OverallQual: Overall material and finish quality
+•	OverallCond: Overall condition rating
+•	YearBuilt: Original construction date
+•	RoofStyle: Type of roof
+•	ExterCond: Present condition of the material on the exterior
+•	TotalBsmtSF: Total square feet of basement area
+•	Heating: Type of heating
+•	CentralAir: Central air conditioning
+•	Bedroom: Number of bedrooms above basement level
+•	Kitchen: Number of kitchens
+•	KitchenQual: Kitchen quality
+•	TotRmsAbvGrd: Total rooms above grade (does not include bathrooms)
+•	GarageArea: Size of garage in square feet
+•	GarageQual: Garage quality
+•	PoolArea: Pool area in square feet
+•	PoolQC: Pool quality
+•	SaleType: Type of sale
+•	SaleCondition: Condition of sale
+
+Data cleaning steps are applied on the dataset which includes creating a subset of data to have selected columns as proposed in proposal and replacing the null values in categorical columns with mode of that column. After cleaning below is the head of our data:
+
+```{r, include=FALSE}
+data <- read.csv("House.csv")
+str(data)
+```
+
+
+```{r, include=FALSE}
+data <- data[, which(names(data) %in%c("SalePrice",
+                "MSSubClass",
+                "LotArea",
+                "LandContour",
+                "OverallQual",
+                "OverallCond",
+                "YearBuilt",
+                "RoofStyle",
+                "ExterCond",
+                "TotalBsmtSF",
+                "Heating",
+                "CentralAir",
+                "Bedroom",
+                "Kitchen",
+                "KitchenQual",
+                "TotRmsAbvGrd",
+                "GarageArea",
+                "GarageQual",
+                "PoolArea",
+                "SaleType",
+                "SaleCondition"))]
+
+str(data)
+```
+
+
+```{r, include=FALSE}
+colSums(is.na(data))
+```
+
+```{r, include=FALSE}
+getmode <- function(v){
+  v=v[nchar(as.character(v))>0]
+  uniqv <- unique(v)
+  uniqv[which.max(tabulate(match(v, uniqv)))]
+}
+
+data$GarageQual <- getmode(data$GarageQual)
+```
+
+```{r, echo=FALSE}
+head(data)
+```
+
+
+
+
+## Methodology:
+  
+  For statistical analysis and prediction, we have used ANOVA, visualizations such as box plots, correlation tests and regression model. Apart from this for the prediction of house prices, we will apply multiple linear regression and decision tree regression to compare the performances of both models based on evaluation metrics such as root mean squared error, mean absolute error and so on. Extensive data cleaning is performed on the data set which includes subseting the data to have columns of interest, removing unnecessary columns, replacing null values in categorical columns with mode and null values in numerical columns with mean value of that particular column.
+  
+
+## Results:
+
+Starting with the scatter plot created below. It can be seen that the trend line fitted is a linear trend line however the relationship between both variables is not perfectly linear. There do exist some positive relationship between both variables which tells us that as the year built increases which means as the age of house reduces, the prices of house increases and as the age of house increases, the prices of house decreases.
+
+```{r, echo=FALSE}
+plot(data$YearBuilt, 
+     data$SalePrice, 
+     main = "Year Built vs Sale Price", 
+     pch = 17, 
+     col = "red")
+abline(lm(data$SalePrice ~ data$YearBuilt), 
+       lwd = 1, 
+       col = "dark green")
+```
+
+Below are a couple of correlation tests applied on different variables with respect to target variable sales price. Pearson method [3] is used. The null and alternate hypothesis are attached below:
+
+Null Hypothesis: Each pair for which correlation test is applied, they are not correlated.
+
+Alternate Hypothesis: Each pair for which correlation test is applied, they are correlated.
+
+As the p values for all 4 correlation tests is below the significance level alpha = 0.05, we can reject the null hypothesis and conclude that each pair for which correlation test is applied, they are correlated. The highest positive correlation exists between year built and sales price with a correlation coefficient of 0.5 approximately and garage area and sales price with a correlation coefficient of 0.6 approximately.
+
+```{r, echo=FALSE}
+cor.test(data$YearBuilt, 
+         data$SalePrice)
+
+cor.test(data$GarageArea, 
+         data$SalePrice)
+
+cor.test(data$OverallCond, 
+         data$SalePrice)
+
+cor.test(data$LotArea, 
+         data$SalePrice)
+```
+
+Moving forward, in order to see whether sales type affects the sales price, one way ANOVA test [4] is applied. The null and alternate hypothesis are attached below:
+
+Null Hypothesis: Sales type has no effect on sales price.
+
+Alternate Hypothesis: Sales type affects the sales price.
+
+As the p value of one way anova [4] is less than significance level 0.05, we can reject the null hypothesis and conclude that sales type affects the sales price.
+
+```{r, echo=FALSE}
+one.way <- aov(data$SalePrice ~ data$SaleType)
+summary(one.way)
+```
+
+To further explore the data, 4 different box plots have been created with respect to the target variable. Following conclusions could be drawn from these box plots:
+
+- The average sales price for houses with roof type gambrel is lowest and highest for roof type Shed.
+
+- The average sales price for house with GasA heating has highest while it is lowest for Grav.
+
+- The average sales price for sale type Con is highest while it is lowest for Oth.
+
+- The average sales price for sale condition partial is highest and lowest for AdjLand.
+
+```{r, echo=FALSE}
+par(mfrow=c(2,2))
+boxplot(data$SalePrice ~ data$RoofStyle, 
+        main = "Roof Style vs Sale Price", 
+        xlab = "Roof Style", 
+        ylab = "Sale Price",
+        col = "purple")
+
+boxplot(data$SalePrice ~ data$Heating, 
+        main = "Heating vs Sale Price", 
+        xlab = "Heating", 
+        ylab = "Sale Price",
+        col = "orange")
+
+boxplot(data$SalePrice ~ data$SaleType, 
+        main = "Sale Type vs Sale Price", 
+        xlab = "Sale Type", 
+        ylab = "Sale Price",
+        col = "red")
+
+boxplot(data$SalePrice ~ data$SaleCondition, 
+        main = "Sale Condition vs Sale Price", 
+        xlab = "Sale Condition", 
+        ylab = "Sale Price",
+        col = "cyan")
+```
+
+```{r, include=FALSE}
+sapply(data, n_distinct)
+```
+
+Finally, a regression model [5] is built to predict the house prices and the summary of regression model is attached below. It can be seen that we have several variables where the p value is less than significance level alpha = 0.05 and they are significant. The highest positive effect amongst significant variables is of Overall condition and sales type set to new. The R square of the model is 79% which means the model was able to explain 79% variability in the data set which is good in this case. The p value of overall model is also less than significance level alpha = 0.05, which makes our model significant.
+
+```{r, echo=FALSE}
+data <- data[, -which(names(data) %in% c("GarageQual"))]
+reg <- lm(SalePrice ~., 
+          data = data)
+summary(reg)
+```
+
+The diagnostic plots are attached below. The residuals vs fitted plot shows a linear trend and pattern which tells us that our model is a better fitted model. The residuals are not normalized as the values deviates at tails of 45 degree line drawn. 
+
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+par(mfrow=c(2,2))
+plot(reg, col = "steel blue")
+```
+
+Finally the RMSE of regression on the data set is attached below and it is 36338.3.
+
+```{r, include=FALSE}
+pred <- predict(reg, data)
+rmse(pred, data$SalePrice)
+```
+
+Next a regression tree is trained and the summary of tree is attached. We can see that the value of n in this case is 1460 and 31 nodes are used to construct the regression tree in this case.
+
+```{r, echo=FALSE}
+regression_tree <- rpart(SalePrice ~.,
+                         data = data)
+regression_tree
+```
+
+A plot of regression tree created in this case is attached below. The RMSE of the regression tree on the data set is 40205.37.
+
+
+```{r, echo=FALSE}
+rpart.plot(regression_tree)
+```
+
+```{r, include=FALSE}
+pred <- predict(regression_tree, data)
+rmse(pred, data$SalePrice)
+```
+
+Based on the RMSE value, we can see that the root mean square error of the regression model is lower as compared to decision tree regression. Hence we can say that the accurate model is the regression model.
+
+
+
+
+## Implications:
+
+  More and more findings could be explored as we have used a subset of data for this project. The original data set has 79 different data points which could be explored and other factors which highly contribute to the sales price of a house. The study could further be taken one step forward by enhancing this machine learning model and deploying it to a website where the general public can input certain parameters and the model gives an estimation of price of house.
+  
+## Conclusion:
+
+  Concluding this project, several key points have been identified. A multiple regression model is built with an R square value of 79%. We saw that age of house, condition, roofing, heating matters in determining the price of a house when it comes to sales. Even sales type has an affect on the price, the garage area, the lot area and the basement square foot affects the prices positively which means increase in those values increases the house prices as well.
+  
+## References:
+
+1. Ravikumar, A. S. (n.d.).S, R. K. (2018). Real Estate Price Prediction Using Machine Learning. School of Computing National College of Ireland.
+
+2.hamarai, D. M. (2020). House Price Prediction Modeling Using Machine Learning. I.J. Information Engineering and Electronic Business, 2020, , 15-20.
+
+3. Coefficient, I., (Hand), H., Excel, F., SPSS, P., & Minitab, H. (2022). Correlation Coefficient: Simple Definition, Formula, Easy Steps. Statistics How To. Retrieved 7 June 2022, from https://www.statisticshowto.com/probability-and-statistics/correlation-coefficient-formula/.
+
+4. One-Way ANOVA Test in R - Easy Guides - Wiki - STHDA. Sthda.com. (2022). Retrieved 7 June 2022, from http://www.sthda.com/english/wiki/one-way-anova-test-in-r.
+
+5. Base, K., & (Examples), M. (2022). Multiple Linear Regression | A Quick Guide (Examples). Scribbr. Retrieved 7 June 2022, from https://www.scribbr.com/statistics/multiple-linear-regression/.
